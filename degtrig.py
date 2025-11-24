@@ -1,4 +1,4 @@
-from math import *
+from math import sin, cos
 
 def degSin(number):
     # returns the sine of the number in degrees
@@ -7,3 +7,4 @@ def degSin(number):
 def degCos(number):
     # returns the cosine of the number in degrees
     return cos(number * pi / 180)
+
