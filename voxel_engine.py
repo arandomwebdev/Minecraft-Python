@@ -4,7 +4,7 @@ from panda3d.core import *
 from direct.gui.OnscreenImage import OnscreenImage
 import random
 import time
-from noise3d import PerlinNoise3D
+from cave_noise import PerlinNoise3D
 from keymap import keyMap
 
 class VoxelEngine(ShowBase):
@@ -227,15 +227,19 @@ class VoxelEngine(ShowBase):
                 height_noise = self.noise.fractal_noise(bx * 0.05, by * 0.05, 0.0, octaves=self.height_octaves)
                 column_height = int(height_noise * self.max_height)
 
-                if column_height < 2:
-                    column_height = 2
-
                 for bz in range(column_height):
                     if bz > 1:
+                        warp = self.noise.fractal_noise(bx * 0.03, by * 0.03, bz * 0.03, octaves=2) * 8.0
+
                         cave_val = self.noise.fractal_noise(
-                            bx * 0.08, by * 0.08, bz * 0.08, octaves=self.cave_octaves
+                            (bx + warp) * 0.05,
+                            (by + warp) * 0.05,
+                            (bz + warp) * 0.05,
+                            octaves=self.cave_octaves
                         )
+
                         solid = (cave_val > self.cave_threshold)
+
                         if not solid:
                             continue
 
@@ -248,10 +252,8 @@ class VoxelEngine(ShowBase):
                         block_type = 'grass'
 
                     world_x, world_y, world_z = self.block_to_world(bx, by, bz)
-                    node = self.createNewBlock(
-                        world_x, world_y, world_z, block_type,
-                        parent=chunk_node, track_in_chunk=True
-                    )
+                    node = self.createNewBlock(world_x, world_y, world_z, block_type, parent=chunk_node,
+                                               track_in_chunk=True)
                     chunk_blocks[(bx, by, bz)] = node
 
         self.chunks[(cx, cy)] = {
@@ -301,7 +303,7 @@ class VoxelEngine(ShowBase):
         self.sandBlock = loader.loadModel('3DBlockModels/sand-block.glb')
 
     def setupLights(self):
-        mainLight = DirectionalLight('main.py light')
+        mainLight = DirectionalLight('without_terrain_base.py light')
         mainLightNodePath = render.attachNewNode(mainLight)
         mainLightNodePath.setHpr(30, -60, 0)
         render.setLight(mainLightNodePath)
