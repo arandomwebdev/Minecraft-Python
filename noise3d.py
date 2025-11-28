@@ -62,6 +62,7 @@ class PerlinNoise3D:
         y2 = self.lerp(x3, x4, v)
 
         return (self.lerp(y1, y2, w) + 1) / 2
+
     def fractal_noise(self, x, y, z, octaves=4, lacunarity=2.0, gain=0.5):
         amplitude = 1.0
         frequency = 1.0
@@ -73,3 +74,18 @@ class PerlinNoise3D:
             amplitude *= gain
             frequency *= lacunarity
         return total / maxA
+
+    def cave_density(self, x, y, z, threshold=0.45):
+        d = self.fractal_noise(x * 0.05, y * 0.05, z * 0.05, octaves=4)
+
+        warp = self.noise(x * 0.1, y * 0.1, z * 0.1) * 4.0
+        d2 = self.fractal_noise(
+            (x + warp) * 0.05,
+            (y + warp) * 0.05,
+            (z + warp) * 0.05,
+            octaves=4
+        )
+
+        density = (d + d2) * 0.5
+
+        return density < threshold
